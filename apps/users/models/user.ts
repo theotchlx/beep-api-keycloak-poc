@@ -60,7 +60,7 @@ export default class User extends compose(BaseModel, AuthFinder) {
   // @manyToMany(() => Role)
   // declare roles: ManyToMany<typeof Role>
 
-  @column()
+  @column.dateTime({ autoCreate: true })
   declare verifiedAt: DateTime | null
 
   @column.dateTime({ autoCreate: true })
