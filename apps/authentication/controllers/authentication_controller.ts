@@ -6,7 +6,6 @@ import {
 } from '#apps/authentication/validators/verify'
 import StorageService from '#apps/storage/services/storage_service'
 import User from '#apps/users/models/user'
-import UserService from '#apps/users/services/user_service'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import redis from '@adonisjs/redis/services/main'
@@ -29,8 +28,7 @@ import logger from '@adonisjs/core/services/logger'
 export default class AuthenticationController {
   constructor(
     private readonly authenticationService: AuthenticationService,
-    private readonly mailService: MailService,
-    private readonly userService: UserService
+    private readonly mailService: MailService
   ) {}
 
   async signin({ request, response, auth }: HttpContext) {
@@ -67,7 +65,6 @@ export default class AuthenticationController {
   async signup({ request, response }: HttpContext) {
     const schemaUser = await request.validateUsing(createAuthenticationValidator)
     const user: User = await this.authenticationService.registerUser(schemaUser)
-    await this.mailService.sendSignUpMail(user)
 
     if (schemaUser.profilePicture) {
       user.profilePicture = await new StorageService().storeProfilePicture(
@@ -126,8 +123,6 @@ export default class AuthenticationController {
     const payload = auth.use('jwt').payload!
 
     if (payload.sub === undefined) return response.status(401).send({ message: 'Unauthorized' })
-    const user = await this.userService.findById(payload.sub.toString())
-    await this.mailService.sendSignUpMail(user)
 
     return response.send({
       message: 'mail send',
